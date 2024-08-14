@@ -11,7 +11,7 @@ async def get_product_sitemap(domain):
     #create search browser
     try:
         browser = await pyppeteer.launch(
-            headless=False,
+            headless=True,
             args=[
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
