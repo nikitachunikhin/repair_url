@@ -110,7 +110,7 @@ async def main():
         raise Exception(f"Query execution failed with state: {state}")
     print(f"Query executed successfully.")
     urls = fetch_query_results_to_dataframe(athena_client, execution_id, ["id", "url", "producthandle", "createdate", "variantid", "domain"])
-    urls.to_csv('data/urls.csv', index=False)
+    #urls.to_csv('data/urls.csv', index=False)
     # Creating a DataFrame with columns 'id' and 'url'
     data = {
         'id': [],
