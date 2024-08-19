@@ -1,6 +1,7 @@
 import asyncio
 import csv
 import logging
+import os
 import subprocess
 from time import sleep
 import boto3
@@ -101,7 +102,12 @@ def repair_link(products_links, domain_df):
                 writer.writerow(element)
 
 async def main():
-    athena_client = boto3.client('athena', region_name='eu-central-1')
+    # Read AWS credentials from environment variables
+    aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+    athena_client = boto3.client('athena', region_name='eu-central-1', aws_access_key_id=aws_access_key_id,
+                      aws_secret_access_key=aws_secret_access_key)
     query_string = read_sql_file("sql_query/get_metadata.sql")
 
     execution_id = execute_athena_query(query_string, athena_client)
@@ -110,6 +116,8 @@ async def main():
         raise Exception(f"Query execution failed with state: {state}")
     print(f"Query executed successfully.")
     urls = fetch_query_results_to_dataframe(athena_client, execution_id, ["id", "url", "producthandle", "createdate", "variantid", "domain"])
+    max_date = urls['dt'].max()
+    min_date = urls['dt'].min()
     #urls.to_csv('data/urls.csv', index=False)
     # Creating a DataFrame with columns 'id' and 'url'
     data = {
@@ -150,9 +158,11 @@ async def main():
             urls = urls[urls["domain"] != domain]
         except Exception as e:
             logging.warning(f"An error occurred: %s", e)
+
+
     #Save output.csv on s3
     bucket_name = 'dst-workbench'
-    file_key_1 = 'mykyta/repair_url/output.csv'
+    file_key_1 = f'mykyta/repair_url/start_date={str(min_date)}_end_date={str(max_date)}/output.csv'
     full_sync_query = f'''
                     aws s3 cp data/output.csv s3://{bucket_name}/{file_key_1}
                     '''
