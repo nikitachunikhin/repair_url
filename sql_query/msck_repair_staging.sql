@@ -1,0 +1,1 @@
+MSCK REPAIR TABLE mykyta.url_repair

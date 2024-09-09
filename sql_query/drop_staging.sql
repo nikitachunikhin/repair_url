@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS mykyta.url_repair_staging;
